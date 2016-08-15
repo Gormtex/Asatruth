@@ -1,0 +1,40 @@
+Notes:
+
+Awake() vs Start():
+	Awake() is always called first, then Start().
+	
+	Awake() is used to set up the current component.
+	Start() is used to get references to other components and use their data for anything our component needs.
+	
+	You don't break this rule, since there's nothing wrong with grabbing just the references in Awake() without actually
+		using those references in Awake(), but I usually like to separate them for clarity.
+	
+Changing Animation:
+	I don't really like the use of plain integers to describe which animations are which. It makes the code pretty hard 
+		to read and it could make it difficult to add new animations. A better way (although still pretty flawed) to do it would be to create an enum
+		to describe all of the animation states, that way at least there's a set list and it's easy to find and read. Or
+		you could make things into booleans, ie standing, running, etc.
+		
+	I personally think booleans are the best way to go, as they make both the code and the animator state machine
+		very easy to understand. Enums help with the code a bit, but in the long run are just cast to integers so the animator is
+		still very hard to read.
+		
+// Use Comments!!
+	Although I don't always comment my code so I can't really blame you haha. It's a hard habit to get into, but it makes everyone's
+		life much easier.
+		
+Input
+	I am a little confused on how you're handling input. I do wanna suggest that we use a custom input manager plugin
+		(here's one I found https://github.com/daemon3000/InputManager/) because the default Unity one kinda sucks. Mainly
+		because you can't remap any of the keys during runtime. Which is kind of a necessity in my opinion. The way I think it currently
+		is working is with all hardcoded buttons too, so you end up using integers to define which button maps to which action, which
+		ends up making the code a lot harder to read. It would be really beneficial to have an input manager to handle mapping a key to 
+		an action string (like A -> left and D -> right), so that way it's only referenced by the action in the code, which means if we
+		wanna change a default key, we only have to do it in one place (I hope this makes sense).
+		
+	It would also be nice for myself, because I noticed you bound jump to c, and it's kind of awkward for my hand position and I usually prefer
+		space.
+		
+I haven't read through all of the code yet, but after playing the game, it all seems to work which is good. And that wall jumping mechanic
+is pretty sick. The only real problem I have with your code is the use of hardcoded integers. I don't really think we'd have to rewrite
+everything. Although once I get a better idea of everything you've already got and what we want in the future, it might be better to, we'll see.
