@@ -21,8 +21,6 @@ public class PlayerMovement : CharacterMovement
 		// Reset jump count
 		if (bGrounded || bClimbing)
 			jumpsUsed = 0;
-
-		Debug.Log(bClimbing);
 	}
 
 	void HandleMovement()
@@ -60,11 +58,11 @@ public class PlayerMovement : CharacterMovement
 			{
 				bClimbing = true;
 			}
+		}
 
-			if (bGrounded)
-			{
-				bClimbing = false;
-			}
+		if (bGrounded)
+		{
+			bClimbing = false;
 		}
 	}
 }
