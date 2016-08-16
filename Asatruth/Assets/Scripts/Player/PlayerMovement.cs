@@ -2,15 +2,19 @@
 using System.Collections;
 using TeamUtility.IO;
 
-public class PlayerMovement : Climbable
+public class PlayerMovement : BasicMovement
 {
 	// Number of jumps at one time
 	public int maxJumps = 2;
 	// Current number of jumps
 	private int jumpsUsed = 0;
 
+	// Climb settings
 	// Are we climbing?
 	protected bool bClimbing;
+	// Can we climb?
+	protected bool bCanClimb = false;
+	protected GameObject toClimb;
 
 	// Epsilon value for deciding if we are at the top of a jump
 	private float topJumpEpsilon = 0.1f;
@@ -24,6 +28,21 @@ public class PlayerMovement : Climbable
 		// Reset jump count
 		if (bGrounded || bClimbing)
 			jumpsUsed = 0;
+	}
+
+	void OnCollisionEnter2D(Collision2D collider)
+	{
+		if (collider.gameObject.tag == "Climbable")
+		{
+			bCanClimb = true;
+			toClimb = collider.gameObject;
+		}
+	}
+
+	void OnCollisionExit2D(Collision2D collider)
+	{
+		if (collider.gameObject.tag == "Climbable")
+			bCanClimb = false;
 	}
 
 	void HandleMovement()

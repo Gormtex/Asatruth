@@ -95,7 +95,6 @@
     <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanSettings.cs" />
     <Compile Include="Assets\Scripts\Camera\CameraFollow.cs" />
     <Compile Include="Assets\Scripts\Character\BasicMovement.cs" />
-    <Compile Include="Assets\Scripts\Character\Climbable.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
   </ItemGroup>
   <ItemGroup>
