@@ -16,6 +16,7 @@ public class BasicMovement : MonoBehaviour
 	private float groundRadius = 2.0f;
 
 	// Jump settings
+	public GameObject jumpParticleEffect;
 	private float jumpForce = 15000.0f;
 
 	void Start()
@@ -41,5 +42,10 @@ public class BasicMovement : MonoBehaviour
 	public virtual void Jump()
 	{
 		rb.AddForce(new Vector2(0.0f, jumpForce));
+
+		if (jumpParticleEffect != null)
+		{
+			Instantiate(jumpParticleEffect, transform.position, Quaternion.identity);
+		}
 	}
 }

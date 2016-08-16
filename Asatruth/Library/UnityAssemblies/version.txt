@@ -1,5 +1,5 @@
 5.3.1f1:2.3.0.0
-WebPlayer
+StandaloneWindows
 X:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll
 X:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll
 X:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll
