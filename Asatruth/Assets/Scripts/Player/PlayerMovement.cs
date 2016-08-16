@@ -2,12 +2,15 @@
 using System.Collections;
 using TeamUtility.IO;
 
-public class PlayerMovement : CharacterMovement
+public class PlayerMovement : Climbable
 {
 	// Number of jumps at one time
 	public int maxJumps = 2;
 	// Current number of jumps
 	private int jumpsUsed = 0;
+
+	// Are we climbing?
+	protected bool bClimbing;
 
 	// Epsilon value for deciding if we are at the top of a jump
 	private float topJumpEpsilon = 0.1f;

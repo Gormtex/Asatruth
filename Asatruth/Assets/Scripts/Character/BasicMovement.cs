@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CharacterMovement : MonoBehaviour
+public class BasicMovement : MonoBehaviour
 {
 	protected Rigidbody2D rb;
 	private SpriteRenderer sprite;
@@ -18,15 +18,6 @@ public class CharacterMovement : MonoBehaviour
 	// Jump settings
 	private float jumpForce = 15000.0f;
 
-	// Climb settings
-	protected bool bClimbing;
-	protected bool bCanClimb = false;
-	protected GameObject toClimb;
-
-	void Awake()
-	{
-	}
-
 	void Start()
 	{
 		rb = GetComponent<Rigidbody2D>();
@@ -36,21 +27,6 @@ public class CharacterMovement : MonoBehaviour
 	void FixedUpdate()
 	{
 		bGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundMask);
-	}
-
-	void OnCollisionEnter2D(Collision2D collider)
-	{
-		if (collider.gameObject.tag == "Climbable")
-		{
-			bCanClimb = true;
-			toClimb = collider.gameObject;
-		}
-	}
-
-	void OnCollisionExit2D(Collision2D collider)
-	{
-		if (collider.gameObject.tag == "Climbable")
-			bCanClimb = false;
 	}
 
 	public virtual void Move(float h)
