@@ -2,14 +2,21 @@
 using System.Collections;
 using TeamUtility.IO;
 
-public class PlayerMovement : BasicMovement
+public class PlayerMovement : MonoBehaviour
 {
+	private Rigidbody2D rb;
+	private Animator anim;
+
+	private Walking walking;
+	private Jumping jumping;
+	private Crouching crouching;
+
 	// Number of jumps at one time
 	public int maxJumps = 2;
 	// Current number of jumps
 	private int jumpsUsed = 0;
 
-	// Climb settings
+	/*** Climb settings ***/
 	// Are we climbing?
 	protected bool bClimbing;
 	// Can we climb?
@@ -19,14 +26,32 @@ public class PlayerMovement : BasicMovement
 	// Epsilon value for deciding if we are at the top of a jump
 	private float topJumpEpsilon = 0.1f;
 
-	void Update()
+	void Start()
 	{
-		HandleMovement();
+		rb = GetComponent<Rigidbody2D>();
+		anim = GetComponent<Animator>();
+
+		walking = GetComponent<Walking>();
+		jumping = GetComponent<Jumping>();
+		crouching = GetComponent<Crouching>();
+	}
+
+	void FixedUpdate()
+	{
+		HandleWalking();
+
 		HandleJumping();
-		HandleClimbing();
+		HandleJumpingAnimations();
+
+		HandleCrouching();
+
+		//HandleClimbing();
+
+		//HandleFalling();
+
 
 		// Reset jump count
-		if (bGrounded || bClimbing)
+		if (jumping.IsGrounded() || bClimbing)
 			jumpsUsed = 0;
 	}
 
@@ -45,11 +70,12 @@ public class PlayerMovement : BasicMovement
 			bCanClimb = false;
 	}
 
-	void HandleMovement()
+	void HandleWalking()
 	{
 		float h = InputManager.GetAxis("Horizontal");
-
-		base.Move(h);
+		walking.Walk(h);
+		
+		anim.SetBool("bWalking", (Mathf.Abs(rb.velocity.x) > 0.0f));
 	}
 
 	void HandleJumping()
@@ -59,15 +85,61 @@ public class PlayerMovement : BasicMovement
 			return;
 
 		// Can we jump?
-		bool bCanJump = bGrounded || (jumpsUsed < (maxJumps - 1));
+		bool bCanJump = jumping.IsGrounded() || (jumpsUsed < (maxJumps - 1));
 		if (bCanJump)
 		{
-			Jump();
+			jumping.Jump();
 			jumpsUsed++;
+			
+			anim.SetTrigger("tJumpUp");
+			anim.SetBool("bJumping", true);
 		}
 	}
 
-	void HandleClimbing()
+	void HandleJumpingAnimations()
+	{
+		if (jumping.IsJumping() && Mathf.Abs(rb.velocity.y) < topJumpEpsilon)
+		{
+			anim.SetTrigger("tJump");
+		}
+		
+		if (rb.velocity.y < 0.0f)
+		{
+			anim.SetTrigger("tFalling");
+		}
+
+		if (jumping.JustLanded())
+		{
+			anim.SetBool("bJumping", false);
+			anim.SetTrigger("tIdle");
+		}
+	}
+
+	void HandleCrouching()
+	{
+		if (InputManager.GetButton("Crouch"))
+		{
+			crouching.Crouch();
+
+			anim.SetBool("bCrouching", true);
+		}
+		else
+		{
+			crouching.Stand();
+
+			anim.SetBool("bCrouching", false);
+		}
+	}
+
+	void HandleFalling()
+	{
+		bool bFalling = !jumping.IsJumping() && (rb.velocity.y < 0.0f);
+
+		if (bFalling)
+			anim.SetTrigger("tFalling");
+	}
+
+	/*void HandleClimbing()
 	{
 		// Should we be climbing?
 		if (bCanClimb)
@@ -86,5 +158,5 @@ public class PlayerMovement : BasicMovement
 		{
 			bClimbing = false;
 		}
-	}
+	}*/
 }

@@ -95,8 +95,10 @@
     <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanFlags.cs" />
     <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanResult.cs" />
     <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanSettings.cs" />
+    <Compile Include="Assets\Scripts\Actions\Crouching.cs" />
+    <Compile Include="Assets\Scripts\Actions\Jumping.cs" />
+    <Compile Include="Assets\Scripts\Actions\Walking.cs" />
     <Compile Include="Assets\Scripts\Camera\CameraFollow.cs" />
-    <Compile Include="Assets\Scripts\Character\BasicMovement.cs" />
     <Compile Include="Assets\Scripts\Effects\AnimatedEffect.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
   </ItemGroup>
