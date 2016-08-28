@@ -6,73 +6,69 @@ public class PlayerMovement : MonoBehaviour
 {
 	private Rigidbody2D rb;
 	private Animator anim;
+	private SpriteRenderer sprite;
 
 	private Walking walking;
 	private Jumping jumping;
 	private Crouching crouching;
+	private WallClimbing wallClimbing;
 
 	// Number of jumps at one time
 	public int maxJumps = 2;
 	// Current number of jumps
 	private int jumpsUsed = 0;
 
-	/*** Climb settings ***/
-	// Are we climbing?
-	protected bool bClimbing;
-	// Can we climb?
-	protected bool bCanClimb = false;
-	protected GameObject toClimb;
+	public Transform top;
 
-	// Epsilon value for deciding if we are at the top of a jump
-	private float topJumpEpsilon = 0.1f;
+	private bool bJumpInput;
 
 	void Start()
 	{
 		rb = GetComponent<Rigidbody2D>();
 		anim = GetComponent<Animator>();
+		sprite = GetComponent<SpriteRenderer>();
 
 		walking = GetComponent<Walking>();
 		jumping = GetComponent<Jumping>();
 		crouching = GetComponent<Crouching>();
+		wallClimbing = GetComponent<WallClimbing>();
+	}
+
+	void Update()
+	{
+		if (!bJumpInput)
+			bJumpInput = InputManager.GetButtonDown("Jump");
 	}
 
 	void FixedUpdate()
 	{
-		HandleWalking();
-
-		HandleJumping();
-		HandleJumpingAnimations();
-
-		HandleCrouching();
-
-		//HandleClimbing();
-
-		//HandleFalling();
-
+		bool bClimbing = wallClimbing.IsClimbing();
+		anim.SetBool("bClimbing", bClimbing);
+		if (!bClimbing)
+		{
+			HandleWalking();
+			HandleJumping();
+			HandleJumpingAnimations();
+			HandleCrouching();
+		}
+		else
+		{
+			HandleClimbing();
+		}
 
 		// Reset jump count
-		if (jumping.IsGrounded() || bClimbing)
+		if (jumping.IsGrounded() || wallClimbing.IsClimbing())
 			jumpsUsed = 0;
-	}
 
-	void OnCollisionEnter2D(Collision2D collider)
-	{
-		if (collider.gameObject.tag == "Climbable")
-		{
-			bCanClimb = true;
-			toClimb = collider.gameObject;
-		}
-	}
-
-	void OnCollisionExit2D(Collision2D collider)
-	{
-		if (collider.gameObject.tag == "Climbable")
-			bCanClimb = false;
+		bJumpInput = false;
 	}
 
 	void HandleWalking()
 	{
 		float h = InputManager.GetAxis("Horizontal");
+		if (crouching.IsCrouching)
+			return;
+
 		walking.Walk(h);
 		
 		anim.SetBool("bWalking", (Mathf.Abs(rb.velocity.x) > 0.0f));
@@ -80,17 +76,17 @@ public class PlayerMovement : MonoBehaviour
 
 	void HandleJumping()
 	{
-		bool bJump = InputManager.GetButtonDown("Jump");
-		if (!bJump)
+		if (!bJumpInput)
 			return;
 
 		// Can we jump?
-		bool bCanJump = jumping.IsGrounded() || (jumpsUsed < (maxJumps - 1));
+		// Are we grounded or (since we are now mid air) do we have enough jumps left?
+		bool bCanJump = (jumping.IsGrounded() || (jumpsUsed < (maxJumps - 1)));
 		if (bCanJump)
 		{
 			jumping.Jump();
 			jumpsUsed++;
-			
+
 			anim.SetTrigger("tJumpUp");
 			anim.SetBool("bJumping", true);
 		}
@@ -98,15 +94,13 @@ public class PlayerMovement : MonoBehaviour
 
 	void HandleJumpingAnimations()
 	{
-		if (jumping.IsJumping() && Mathf.Abs(rb.velocity.y) < topJumpEpsilon)
+		if (jumping.AtTopOfJump())
 		{
 			anim.SetTrigger("tJump");
 		}
-		
-		if (rb.velocity.y < 0.0f)
-		{
-			anim.SetTrigger("tFalling");
-		}
+
+		bool bFalling = (rb.velocity.y < 0.0f);
+		anim.SetBool("bFalling", bFalling);
 
 		if (jumping.JustLanded())
 		{
@@ -131,32 +125,44 @@ public class PlayerMovement : MonoBehaviour
 		}
 	}
 
-	void HandleFalling()
+	void HandleClimbing()
 	{
-		bool bFalling = !jumping.IsJumping() && (rb.velocity.y < 0.0f);
+		if (bJumpInput)
+		{
+			HandleWallJump();
+			return;
+		}
 
-		if (bFalling)
-			anim.SetTrigger("tFalling");
+		float h = InputManager.GetAxis("Horizontal");
+		bool bStick = ((h < 0.0f) == sprite.flipX);
+		bool bFall = InputManager.GetButton("Crouch");
+
+		if (bFall)
+		{
+			wallClimbing.Fall();
+		}
+		else if (bStick)
+		{
+			wallClimbing.StickToWall();
+		}
+		else if ((h > 0.0f) == sprite.flipX)
+		{
+			// Jump off the wall
+			wallClimbing.StopClimbing();
+			jumping.Jump(0.0f);
+		}
 	}
 
-	/*void HandleClimbing()
+	void HandleWallJump()
 	{
-		// Should we be climbing?
-		if (bCanClimb)
-		{
-			float ySpeed = Mathf.Abs(rb.velocity.y);
+		wallClimbing.StopClimbing();
 
-			// If we are not climbing yet, we are not grounded (we are jumping), and are at the top of the jump,
-			//		- then start climbing
-			if (!bClimbing && !bGrounded && ySpeed < topJumpEpsilon)
-			{
-				bClimbing = true;
-			}
-		}
+		float angle = (sprite.flipX) ? 60.0f * Mathf.Deg2Rad : 120.0f * Mathf.Deg2Rad;
+		jumping.Jump(angle);
 
-		if (bGrounded)
-		{
-			bClimbing = false;
-		}
-	}*/
+		jumpsUsed++;
+
+		anim.SetTrigger("tJumpUp");
+		anim.SetBool("bJumping", true);
+	}
 }

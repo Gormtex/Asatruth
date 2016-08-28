@@ -3,6 +3,12 @@ using System.Collections;
 
 public class Jumping : MonoBehaviour
 {
+	// Particle effect to spawn when starting a jump
+	public GameObject jumpParticleEffect;
+	// The upward force for a jump
+	public float jumpSpeed = 350.0f;
+
+	// Handle to this game objects rigidbody
 	protected Rigidbody2D rb;
 
 	// Are we on the ground?
@@ -14,13 +20,15 @@ public class Jumping : MonoBehaviour
 	// Are we falling?
 	protected bool bFalling;
 
-	public Transform groundCheck;
+	// LayerMask describing what is ground
 	public LayerMask groundMask;
+	// Transform describing the bottom of the character (to check for ground collision)
+	public Transform groundCheck;
+	// The radius of circle used to check if the character is grounded
 	private float groundRadius = 2.0f;
 
-	// Jump settings
-	public GameObject jumpParticleEffect;
-	public float jumpForce = 17500.0f;
+	// Epsilon value for deciding if we are at the top of a jump
+	private float topJumpEpsilon = 0.1f;
 
 	void Start()
 	{
@@ -35,7 +43,7 @@ public class Jumping : MonoBehaviour
 
 		bGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundMask);
 
-		if (bFalling && bGrounded && rb.velocity.y <= 0.0f)
+		if (bFalling && rb.velocity.y <= 0.0f)
 		{
 			// For one frame, bJumping and bJustLanded will both be true.
 			// The frame after, both will be false.
@@ -45,26 +53,43 @@ public class Jumping : MonoBehaviour
 		bFalling = (!bGrounded) && (rb.velocity.y < 0.0f);
 	}
 
+	// Are we on the ground?
 	public bool IsGrounded()
 	{
 		return bGrounded;
 	}
 
+	// Are we jumping?
 	public bool IsJumping()
 	{
 		return bJumping;
 	}
 
+	// Have we just landed on the ground?
+	// Note: This function returns true if we have just landed from a jump OR a fall.
 	public bool JustLanded()
 	{
 		return bJustLanded;
 	}
 
-	public virtual void Jump()
+	// Are we at the top of the jump?
+	public bool AtTopOfJump()
+	{
+		return bJumping && (Mathf.Abs(rb.velocity.y) < topJumpEpsilon);
+	}
+
+	// Make this character jump.
+	// @param angle - The angle for the jump. Defaults to PI/2 rads (up).
+	public virtual void Jump(float angle = (Mathf.PI / 2.0f))
 	{
 		bJumping = true;
 
-		rb.AddForce(new Vector2(0.0f, jumpForce));
+		//Vector2 force = new Vector2(Mathf.Cos(angle) * jumpForce, Mathf.Sin(angle) * jumpForce);
+		//Debug.Log(force);
+		//rb.AddForce(force);
+
+		Vector2 velocity = new Vector2(Mathf.Cos(angle) * jumpSpeed, Mathf.Sin(angle) * jumpSpeed);
+		rb.velocity += velocity;
 
 		if (jumpParticleEffect != null)
 		{
